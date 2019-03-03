@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "672639559544",
+    "firebase_url": "https://ynote-d6785.firebaseio.com",
+    "project_id": "ynote-d6785",
+    "storage_bucket": "ynote-d6785.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:672639559544:android:89947fa0c6c93a13",
+        "android_client_info": {
+          "package_name": "com.example.ynote.ynote"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "672639559544-jh6a1srtflcmm8rbv21rmtj0mkr43hi5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.ynote.ynote",
+            "certificate_hash": "5e1b2a29dce4a4dc8bdebe23b905e2c3ee4bd4aa"
+          }
+        },
+        {
+          "client_id": "672639559544-jr3he08da6bi4grtq4noue4pqebomvfn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.ynote.ynote",
+            "certificate_hash": "8b1d95c18818bde7bc6322977e51afed4685f06b"
+          }
+        },
+        {
+          "client_id": "672639559544-iqr8fukt0v0avf2pqqbnivv2i6ou93ee.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHQkCSpzQYa7k8Q4HNsv-0DyAElYzWrfI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "672639559544-iqr8fukt0v0avf2pqqbnivv2i6ou93ee.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
