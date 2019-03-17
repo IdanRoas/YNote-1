@@ -2,6 +2,7 @@ package com.example.ynote.ynote;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -42,8 +43,7 @@ public class MainScreen extends AppCompatActivity  {
     LocationRequest mLocationRequest = new LocationRequest();
     FusedLocationProviderClient mFusedLocationClient;
     static LatLng userLocation;
-
-
+    LocationManager locationManager;
 
 
     @Override
@@ -61,48 +61,18 @@ public class MainScreen extends AppCompatActivity  {
         ChangeFragment(homeFragment);
         bottomNavigationView.setSelectedItemId(R.id.home_btn);
 
-        LocationManager locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+        locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER )) {
             Intent callGPSSettingIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
             startActivity(callGPSSettingIntent);
-
         }
-        else {
-
-            // find my location
-            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-            }
-            mFusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                @Override
-                public void onSuccess(Location location) {
-
-
-                        userLocation = new LatLng(location.getLatitude(), location.getLongitude());
+        // find user location
+        findUserLocation();
 
 
 
-                }
-            });
-            mLocationCallback = new LocationCallback() {
-                @Override
-                public void onLocationResult(LocationResult locationResult) {
-                    if (locationResult == null) {
-                        Intent callGPSSettingIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                        startActivity(callGPSSettingIntent);
-                    }
-                    for (Location location : locationResult.getLocations()) {
-                        userLocation = new LatLng(location.getLatitude(), location.getLongitude());
-                        // ...
-                    }
-                }
 
-                ;
-            };
-        }
 
-         //choose fragment
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -121,6 +91,11 @@ public class MainScreen extends AppCompatActivity  {
             }
         });
     }
+
+    @Override
+    public void onBackPressed() {
+        startLocationUpdates();
+    }
     @Override
     public void onResume() {
         super.onResume();
@@ -132,13 +107,17 @@ public class MainScreen extends AppCompatActivity  {
 
     private void startLocationUpdates() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-            return;
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
 
-        mFusedLocationClient.requestLocationUpdates(mLocationRequest,
-                mLocationCallback,
-                null /* Looper */);
+        if (LocationServices.getFusedLocationProviderClient(this)!=null){
+                mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+                mFusedLocationClient.requestLocationUpdates(mLocationRequest,
+                        mLocationCallback,
+                        null);
+        }else
+            findUserLocation();
+
     }
 
     @Override
@@ -149,6 +128,7 @@ public class MainScreen extends AppCompatActivity  {
             startActivity(intent);
             finish();
         }
+
     }
 //logOut
 
@@ -172,7 +152,6 @@ public class MainScreen extends AppCompatActivity  {
             case R.id.logout_button:
                 FirebaseAuth.getInstance().signOut();
                 logOut1();
-
                 return true;
 
             case R.id.setting_button:
@@ -184,11 +163,7 @@ public class MainScreen extends AppCompatActivity  {
                 return true;
             default:
                 return false;
-
         }
-
-
-
     }
 
     private void ChangeFragment(Fragment fragment){
@@ -206,8 +181,30 @@ public class MainScreen extends AppCompatActivity  {
         finish();
     }
 
+public  void  findUserLocation(){
+    mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+    }
+    mFusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
+        @Override
+        public void onSuccess(Location location) {
+            if(location!= null)
+                userLocation = new LatLng(location.getLatitude(), location.getLongitude());
+        }
+    });
+    mLocationCallback = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            if (locationResult == null) {
+                startLocationUpdates();
+            }else
+                for (Location location : locationResult.getLocations())
+                    userLocation = new LatLng(location.getLatitude(), location.getLongitude());
+        }
+    };
+}
      static public LatLng getUserLocation(){
         return userLocation;
     }
-
 }

@@ -1,6 +1,7 @@
 package com.example.ynote.ynote;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -17,7 +18,10 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    final int RC_SIGN_IN=2;
+    final int RC_SIGN_IN = 2;
+    public static final String PREFS_NAME = "MyPrefsFile";
+    public static final String KEY_FIRST_TIME = "firstTime";
+
 
 
 
@@ -35,9 +39,6 @@ public class MainActivity extends AppCompatActivity {
                 new AuthUI.IdpConfig.GoogleBuilder().build(),
                 new AuthUI.IdpConfig.FacebookBuilder().build());
 
-
-
-
 // Create and launch sign-in intent
         startActivityForResult(
                 AuthUI.getInstance()
@@ -54,27 +55,37 @@ public class MainActivity extends AppCompatActivity {
                 .addOnCompleteListener(new OnCompleteListener<Void>()
                 {
                     public void onComplete(@NonNull Task<Void> task) {
-                   //
                     }
-
                 });
-
-
-
     }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == RC_SIGN_IN) {
+
             IdpResponse response = IdpResponse.fromResultIntent(data);
             Intent intent = new Intent(this.getBaseContext(),MainScreen.class);
             startActivity(intent);
 
             if (resultCode == RESULT_OK) {
-                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                intent = new Intent(this.getBaseContext(),MainScreen.class);
-                startActivity(intent);
+
+                SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+                boolean firstTime = prefs.getBoolean(KEY_FIRST_TIME, false);
+
+                if (firstTime) {
+                    intent = new Intent(this.getBaseContext(),MainScreen.class);
+                    startActivity(intent);
+                } else {
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putBoolean(KEY_FIRST_TIME, true);
+                    editor.commit();
+                    Intent sendToSetup = new Intent(this, SetupActivity.class);
+                    startActivity(sendToSetup);
+                    finish();
+                }
+
 
             } else {
                 Toast.makeText(getBaseContext(), "Failed, please try again", Toast.LENGTH_SHORT).show();

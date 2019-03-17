@@ -1,5 +1,5 @@
 package com.example.ynote.ynote;
-
+import com.example.*;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;

@@ -69,14 +69,16 @@ public class SetupActivity extends AppCompatActivity {
             // check if the provider id matches "facebook.com"
             if(FacebookAuthProvider.PROVIDER_ID.equals(profile.getProviderId())) {
                 facebookUserId = profile.getUid();
+                // facebook photo profile
+                facebookProfileImage = "https://graph.facebook.com/" + facebookUserId + "/picture?height=500";
+
+
+                Glide.with(getBaseContext())
+                        .load(Uri.parse(facebookProfileImage)) // the uri you got from Firebase
+                        .into(circleImageView);
             }
         }
-        // facebook photo profile
-         facebookProfileImage = "https://graph.facebook.com/" + facebookUserId + "/picture?height=500";
 
-        Glide.with(getBaseContext())
-                .load(Uri.parse(facebookProfileImage)) // the uri you got from Firebase
-                .into(circleImageView);
 
         storageReference=FirebaseStorage.getInstance().getReference();
 
@@ -87,7 +89,7 @@ public class SetupActivity extends AppCompatActivity {
                     if (task.getResult().exists()) {
                        aboutText.setText((String)task.getResult().getData().get("About"));
                         String image =  (String)task.getResult().getData().get("URI");
-                        if (!image.equals(facebookProfileImage)) {
+                        if (!image.equals("")) {
                             Glide.with(getBaseContext())
                                     .load(image)
                                     .into(circleImageView);
@@ -98,57 +100,46 @@ public class SetupActivity extends AppCompatActivity {
         });
 
        final Map <String, String> userdata=  new HashMap<>();
+        //set setting button
         set_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                about_text=aboutText.getText().toString();
+                about_text = aboutText.getText().toString();
                 aboutText.setText(about_text);
                 userdata.put("name", user.getDisplayName());
-
                 userdata.put("About", about_text);
-                userdata.put("URI",facebookProfileImage);
+                userdata.put("URI", facebookProfileImage);
 
-
-        if(mainImageURI!=null&&!mainImageURI.toString().equals(facebookProfileImage)) {
-             image_path = storageReference.child("userProfileImage").child(user.getUid() + ".jpg");
-            image_path.putFile(mainImageURI).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                    if (task.isSuccessful()) {
-
-                        download_uri = image_path.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            public void onSuccess(Uri uri) {
-                                storageReference.child("userProfileImage").child(user.getUid()).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                if (mainImageURI != null) {
+                    image_path = storageReference.child("userProfileImage").child(user.getUid() + ".jpg");
+                    image_path.putFile(mainImageURI).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                            if (task.isSuccessful()) {
+                                download_uri = image_path.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                                     @Override
                                     public void onSuccess(Uri uri) {
-
+                                        userdata.put("URI", uri.toString());
+                                        db.collection("users").document(user.getUid()).set(userdata);
                                     }
                                 });
-                                if(mainImageURI!=null)
-                                    userdata.put("URI",uri.toString());
 
+                                Toast.makeText(SetupActivity.this, "The image uploaded", Toast.LENGTH_LONG).show();
 
-
-                                
+                            } else {
+                                String error = task.getException().getMessage();
+                                Toast.makeText(SetupActivity.this, "Error uploaded " + error, Toast.LENGTH_LONG).show();
                             }
-                        });
 
-                        Toast.makeText(SetupActivity.this, "The image uploaded", Toast.LENGTH_LONG).show();
-
-                    } else {
-                        String error = task.getException().getMessage();
-                        Toast.makeText(SetupActivity.this, "Error uploaded "+error, Toast.LENGTH_LONG).show();
-                    }
+                        }
+                    });
 
                 }
-            });
-        }else  {userdata.put("URI",mainImageURI.toString());
-            db.collection("users").document(user.getUid()).set(userdata);}
-                Intent intent= new Intent(SetupActivity.this, MainScreen.class);
+                db.collection("users").document(user.getUid()).set(userdata);
+                Intent intent = new Intent(SetupActivity.this, MainScreen.class);
                 startActivity(intent);
-
-            } });
+            }
+        });
 
 
         circleImageView.setOnLongClickListener(new  View.OnLongClickListener() {
@@ -206,9 +197,6 @@ public class SetupActivity extends AppCompatActivity {
                 mainImageURI = result.getUri();
                 circleImageView.setImageURI(mainImageURI);
 
-
-
-
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
 
                 Exception error = result.getError();
@@ -222,5 +210,3 @@ public class SetupActivity extends AppCompatActivity {
         mainImageURI=Uri.parse(facebookProfileImage);
     }
 }
-
-//*/

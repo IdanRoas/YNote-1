@@ -1,10 +1,12 @@
 package com.example.ynote.ynote;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import static android.R.layout.simple_list_item_1;
+import static android.content.Context.MODE_PRIVATE;
 
 
 public class HomeFragment extends Fragment {
@@ -130,7 +133,7 @@ public class HomeFragment extends Fragment {
 
 
         final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        mAuth = FirebaseAuth.getInstance();
+
 
         facebookUserId = "";
         // find the Facebook profile and get the user's id
@@ -198,20 +201,6 @@ private void spinnerOption(int min, int max){
                                      String date=doc.getDocument().get("date").toString();
                                      //List<LatLng> polyLineP = doc.getDocument().get("polylineP");
                                     titles.add(title);
-
-                                    /*NoteObj parcelNote = new NoteObj();
-                                    parcelNote.setText(text);
-                                    parcelNote.setType(type);
-                                    parcelNote.setUri(uriList);
-                                    parcelNote.setTitle(title);
-                                    parcelNote.setUserId(userKey);
-                                    parcelNote.setBiggestRadius(biggestRadius);
-                                    parcelNote.setDate(date);*/
-                                    //Parcelable noteParcel = new NoteObj(getPolyLineP,text,type,uriList,title,userKey,biggestRadius,date);
-
-                                    /*Intent in = new Intent(this, ProcessDataActivity.class);
-                                    in.putExtra("note", parcelNote);
-                                    startActivity(in);*/
 
                                     noteKeyMap.put(titles.size() - 1, noteId);
                                     userKeyMap.put(titles.size() - 1, userKey);
