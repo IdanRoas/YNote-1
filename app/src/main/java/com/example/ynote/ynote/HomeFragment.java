@@ -193,25 +193,11 @@ private void spinnerOption(int min, int max){
                                     String noteId = doc.getDocument().getId();
                                     String userKey = doc.getDocument().get("userId").toString();
                                     uriList= (List<String>)doc.getDocument().get("uri");
-                                     text=doc.getDocument().get("text").toString();
-                                     String type=doc.getDocument().get("type").toString();
-                                     String date=doc.getDocument().get("date").toString();
+                                    text=doc.getDocument().get("text").toString();
+                                    String type=doc.getDocument().get("type").toString();
+                                    String date=doc.getDocument().get("date").toString();
                                      //List<LatLng> polyLineP = doc.getDocument().get("polylineP");
                                     titles.add(title);
-
-                                    /*NoteObj parcelNote = new NoteObj();
-                                    parcelNote.setText(text);
-                                    parcelNote.setType(type);
-                                    parcelNote.setUri(uriList);
-                                    parcelNote.setTitle(title);
-                                    parcelNote.setUserId(userKey);
-                                    parcelNote.setBiggestRadius(biggestRadius);
-                                    parcelNote.setDate(date);*/
-                                    //Parcelable noteParcel = new NoteObj(getPolyLineP,text,type,uriList,title,userKey,biggestRadius,date);
-
-                                    /*Intent in = new Intent(this, ProcessDataActivity.class);
-                                    in.putExtra("note", parcelNote);
-                                    startActivity(in);*/
 
                                     noteKeyMap.put(titles.size() - 1, noteId);
                                     userKeyMap.put(titles.size() - 1, userKey);

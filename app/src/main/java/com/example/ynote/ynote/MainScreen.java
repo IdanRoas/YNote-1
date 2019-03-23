@@ -37,12 +37,12 @@ public class MainScreen extends AppCompatActivity  {
     FirebaseUser current_user;
     BottomNavigationView bottomNavigationView;
     ChatFragment chatFragment;
-    Notification notification;
     HomeFragment homeFragment;
     LocationCallback mLocationCallback;
     LocationRequest mLocationRequest = new LocationRequest();
     FusedLocationProviderClient mFusedLocationClient;
     static LatLng userLocation;
+    NotificationFragment notification;
     LocationManager locationManager;
 
 
@@ -57,7 +57,7 @@ public class MainScreen extends AppCompatActivity  {
         bottomNavigationView=findViewById(R.id.bottom_nav);
         homeFragment=new HomeFragment();
         chatFragment=new ChatFragment();
-        notification= new Notification();
+        notification= new NotificationFragment();
         ChangeFragment(homeFragment);
         bottomNavigationView.setSelectedItemId(R.id.home_btn);
 

@@ -37,9 +37,7 @@ public class UpdateScore {
                         int intScore;
                         try {
                             intScore = Integer.parseInt(score);
-                        }
-                        catch (NumberFormatException e)
-                        {
+                        } catch (NumberFormatException e){
                             intScore = 15;
                         }
                         int newScore = (intScore + i);

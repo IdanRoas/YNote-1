@@ -13,6 +13,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -47,19 +48,18 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 
 public class Note extends AppCompatActivity {
-    String name, text, date, score;
-    String  like, profileUri = null, type;
-    UpdateScore updateScore = new UpdateScore();
-    CircleImageView noteUserImage;
-    FragmentPagerAdapter adapterViewPager;
+    private String name, date, score;
+    private  String   profileUri = null, type;
+    private UpdateScore updateScore = new UpdateScore();
+    private CircleImageView noteUserImage;
+    private   FragmentPagerAdapter adapterViewPager;
     static List<String> uriArray;
-    static String noteId,title;
+    static String noteId,title, text;
     FirebaseFirestore firebaseFirestore;
     FirebaseAuth firebaseAuth;
     private Button noteDeleteBtn;
     private ImageView noteLikeBtn;
-    private TextView noteUserName, noteUserScore, noteComment,noteDate, noteTitle ,noteText,noteLikeCnt, noteCommentCnt, knote;
-    private String about;
+    private TextView noteUserName, noteUserScore, noteComment,noteDate, noteTitle ,noteText,noteText2, noteLikeCnt, noteCommentCnt;
     private boolean sameUser = false;
 
     @Override
@@ -70,6 +70,7 @@ public class Note extends AppCompatActivity {
         text = getIntent().getExtras().get("textMap").toString();
         title = getIntent().getExtras().get("titleMap").toString();
         date = getIntent().getExtras().get("dateMap").toString();
+        type=getIntent().getExtras().get("typeMap").toString();
         final String noteUserId = getIntent().getExtras().get("userKey").toString();
         uriArray=(ArrayList<String>)getIntent().getExtras().get("uriMap");
 
@@ -85,7 +86,7 @@ public class Note extends AppCompatActivity {
         final String currentUserId = firebaseAuth.getCurrentUser().getUid();
 
 
-
+        ViewPager vpPager =findViewById(R.id.note_vpPager);
         noteDeleteBtn = findViewById(R.id.note_delete_btn);
         noteUserName = findViewById(R.id.note_user_name);
         noteUserScore = findViewById(R.id.note_user_score);
@@ -95,17 +96,29 @@ public class Note extends AppCompatActivity {
         noteDate = findViewById(R.id.note_date);
         noteTitle = findViewById(R.id.note_title);
         noteText = findViewById(R.id.note_desc);
+        noteText2=findViewById(R.id.note_desc2);
         noteTitle.setText(title);
+        if(type.equals("pic")){
         noteText.setText(text);
+        noteText.setVisibility(View.VISIBLE);
+        vpPager.setVisibility(View.VISIBLE);
+        noteText2.setVisibility(View.INVISIBLE);}
+        else {
+            noteText.setVisibility(View.INVISIBLE);
+            noteText2.setText(text);
+            vpPager.setVisibility(View.INVISIBLE);
+            noteText2.setVisibility(View.VISIBLE);
+        }
+
+
+
 
 
 
         if(noteUserId.equals(currentUserId)){
-
             sameUser = true;
             noteDeleteBtn.setEnabled(true);
             noteDeleteBtn.setVisibility((View.VISIBLE));
-
         }
 
         noteDeleteBtn.setOnClickListener(new View.OnClickListener() {
@@ -129,9 +142,9 @@ public class Note extends AppCompatActivity {
                                 });
                                 Toast.makeText(Note.this, "Your Note Has Been Deleted ...", Toast.LENGTH_SHORT).show();
                                 break;
-                                case DialogInterface.BUTTON_NEGATIVE:
+                            case DialogInterface.BUTTON_NEGATIVE:
                                     //No button clicked
-                                    break;
+                                break;
                         }
                     }
                 };
@@ -171,23 +184,13 @@ public class Note extends AppCompatActivity {
         firebaseFirestore.collection("Notes/" + noteId + "/Likes").addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-
-                int count = 0;
-                if(!queryDocumentSnapshots.isEmpty()){
-                    count = queryDocumentSnapshots.size();
-                }
-                noteLikeCnt.setText(count + " Likes");
+                setCount("Likes", queryDocumentSnapshots, noteLikeCnt);
             }
         });
         firebaseFirestore.collection("Notes/" + noteId + "/Comments").addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-
-                int count = 0;
-                if(!queryDocumentSnapshots.isEmpty()){
-                    count = queryDocumentSnapshots.size();
-                }
-                noteCommentCnt.setText(count + " Comments");
+                setCount(" Comments", queryDocumentSnapshots,noteCommentCnt);
             }
         });
 
@@ -195,12 +198,10 @@ public class Note extends AppCompatActivity {
         firebaseFirestore.collection("Notes/" + noteId + "/Likes").document(currentUserId).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-                if (documentSnapshot.exists()){
+                if (documentSnapshot.exists())
                     noteLikeBtn.setImageDrawable(getDrawable(R.mipmap.action_like_accent));
-                }
-                else{
+                else
                     noteLikeBtn.setImageDrawable(getDrawable(R.mipmap.action_like_gray));
-                }
             }
         });
 
@@ -215,29 +216,11 @@ public class Note extends AppCompatActivity {
 
                             Map<String, Object> likesMap = new HashMap<>();
                             likesMap.put("timestamp", FieldValue.serverTimestamp());
-
                             firebaseFirestore.collection("Notes/" + noteId + "/Likes").document(currentUserId).set(likesMap);
-
-                            if (!sameUser){
-                                updateScore.update(Note.this,noteUserId,12);
-                                updateScore.update(Note.this,currentUserId,2);
-                            }
-                            else{
-                                updateScore.update(Note.this,noteUserId,2);
-                            }
-
-
+                             setScore(12,2, noteUserId,currentUserId);
                         }else {
-
                             firebaseFirestore.collection("Notes/" + noteId + "/Likes").document(currentUserId).delete();
-                            //firebaseFirestore.collection("Notes/" + noteId + "/Notifications").document(currentUserId).delete();
-                            if (!sameUser){
-                                updateScore.update(Note.this,noteUserId,-12);
-                                updateScore.update(Note.this,currentUserId,-2);
-                            }
-                            else{
-                                updateScore.update(Note.this,noteUserId,-2);
-                            }
+                            setScore(-12,-2, noteUserId,currentUserId);
                         }
                     }
                 });
@@ -262,10 +245,35 @@ public class Note extends AppCompatActivity {
             }
         });
 
-        ViewPager vpPager =findViewById(R.id.note_vpPager);
+
         adapterViewPager = new MyPagerAdapter(getSupportFragmentManager());
         vpPager.setAdapter(adapterViewPager);
 
+    }
+    //Set likes and comments count
+    private  void setCount(String string, QuerySnapshot querySnapshot, TextView textView){
+        int count = 0;
+        if(!querySnapshot.isEmpty()){
+            count = querySnapshot.size();
+        }
+        textView.setText(count + string);
+    }
+
+    /**
+     *  score update function.
+     * @param i-  points for  the note creator
+     * @param j- points for the user that commit the action(like/comment..)
+     * @param noteUserId
+     * @param currentUserId
+     */
+    private void setScore(int i, int j,String noteUserId, String currentUserId){
+        if (!sameUser){
+            updateScore.update(Note.this,noteUserId,i);
+            updateScore.update(Note.this,currentUserId,j);
+        }
+        else{
+            updateScore.update(Note.this,noteUserId,j);
+        }
     }
 
 
@@ -276,10 +284,11 @@ public class Note extends AppCompatActivity {
         private ArrayList<String> uri;
 
 
+
         public MyPagerAdapter(FragmentManager fragmentManager) {
             super(fragmentManager);
-            uri=new ArrayList<>(uriArray);
-            NUM_ITEMS=uri.size();
+            uri = new ArrayList<>(uriArray);
+            NUM_ITEMS = uri.size();
         }
 
 
@@ -292,32 +301,32 @@ public class Note extends AppCompatActivity {
         // Return the fragment to display for that page
         @Override
         public Fragment getItem(int position) {
-            if (uri != null) {
+
+             if (uri != null) {
                 switch (position) {
 
-                    case 0: // Fragment # 0 - This will show FirstF pic
-                            return pic1Fragment.newInstance(HomeFragment.text, uri.get(0));
-                    case 1: // pic  # 1 - This will show the second pic
-                        return pic1Fragment.newInstance(HomeFragment.text, uri.get(1));
+                    case 0: // Fragment # 0 - This will show the First fragment pic
+                        return pic1Fragment.newInstance(uri.get(0));
+                    case 1: // pic  # 1 - This will show the second fragment pic
+                        return pic1Fragment.newInstance(uri.get(1));
                     case 2: // pic # 2
-                        return pic1Fragment.newInstance(HomeFragment.text, uri.get(2));
+                        return pic1Fragment.newInstance(uri.get(2));
                     case 3: // pic # 3
-                        return pic1Fragment.newInstance(HomeFragment.text, uri.get(3));
+                        return pic1Fragment.newInstance(uri.get(3));
                     case 4: // pic # 4
-                        return pic1Fragment.newInstance(HomeFragment.text, uri.get(4));
+                        return pic1Fragment.newInstance(uri.get(4));
                     default:
                         return null;
                 }
+
             }
-            return null;
-        }
+            return null;}
 
+            // Return the page title for the top indicator
+            @Override
+            public CharSequence getPageTitle ( int position){
+                return "";
 
-        // Returns the page title for the top indicator
-        @Override
-        public CharSequence getPageTitle(int position) {
-            return "Image " + (position + 1);
-
+            }
         }
     }
-}

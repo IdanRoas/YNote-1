@@ -15,21 +15,17 @@ import com.bumptech.glide.Glide;
 
 
 public class pic1Fragment extends Fragment {
-    private String title;
-    private String text;
+    private String url;
+   
 
 
 
-    public String getText() {
-        return text;
-    }
+   
 
-    public static pic1Fragment newInstance(String text, String title) {
+    public static pic1Fragment newInstance( String url) {
         pic1Fragment pic1Fragment = new pic1Fragment();
         Bundle args = new Bundle();
-        args.putString("text", text);
-        args.putString("title", title);
-
+        args.putString("url", url);
         pic1Fragment.setArguments(args);
         return pic1Fragment;
 
@@ -37,8 +33,7 @@ public class pic1Fragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState)throws NullPointerException {
         super.onCreate(savedInstanceState);
-        text = getArguments().getString("text");
-        title = getArguments().getString("title");
+        url = getArguments().getString("url");
 
     }
 
@@ -54,14 +49,12 @@ public class pic1Fragment extends Fragment {
        View view = inflater.inflate(R.layout.fragment_pic1, container, false);
 
         ImageView imageView= view.findViewById(R.id.image1);
-        TextView textView= view.findViewById(R.id.text1);
-        if(title!="null") {
+        if(url!="null") {
             Glide.with(view)
-                    .load(Uri.parse(title))
+                    .load(Uri.parse(url)).thumbnail()
                     .into(imageView);
             }
 
-        textView.setText(text);
         return view;
     }
 }

@@ -16,6 +16,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.bumptech.glide.Glide;
+import com.facebook.appevents.codeless.CodelessMatcher;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -39,10 +40,10 @@ import static com.example.ynote.ynote.MapsActivity.polylinePoints;
 
 public class NewNote extends AppCompatActivity {
 
-    EditText editText, titleView;
+    EditText editText, titleView, editText2;
     Button shareButton;
     String text, title,name = "x";
-
+    String type="text";
     UpdateScore updateScore = new UpdateScore();
     FirebaseAuth firebaseAuth;
     final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -67,6 +68,8 @@ public class NewNote extends AppCompatActivity {
         shareButton = findViewById(R.id.share_button);
         titleView = findViewById(R.id.title);
         imageView = findViewById(R.id.imageView_btn);
+        Button textButton= findViewById(R.id.text_btn);
+         editText2=findViewById(R.id.text2);
         final Button im_btn = findViewById(R.id.img_button);
 
         firebaseAuth = FirebaseAuth.getInstance();
@@ -79,9 +82,25 @@ public class NewNote extends AppCompatActivity {
         textViewsArray[4] = findViewById(R.id.pic5_btn);
 
 
+
+        textButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                imageView.setVisibility(view.INVISIBLE);
+                editText.setVisibility(view.INVISIBLE);
+                editText2.setVisibility(view.VISIBLE);
+                type="text";
+
+            }
+        });
+
         im_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                imageView.setVisibility(view.VISIBLE);
+                editText2.setVisibility(view.INVISIBLE);
+                editText.setVisibility(view.VISIBLE);
+                type="pic";
                 int i = 0;
                 while (uriArray[i] != null && i < 5)
                     i++;
@@ -114,7 +133,6 @@ public class NewNote extends AppCompatActivity {
                                     public void onSuccess(Uri uri) {
                                         downloadUriArray.add(uri.toString());
                                         checker++;
-                                        if(checker==5)
                                             send();
 
 
@@ -124,7 +142,6 @@ public class NewNote extends AppCompatActivity {
                                     public void onFailure(@NonNull Exception exception) {
                                         Toast.makeText(getBaseContext(), "Failed upload, try agin", Toast.LENGTH_LONG).show();
                                         checker++;
-                                        if(checker==5)
                                             send();
                                     }
                                 });
@@ -132,14 +149,9 @@ public class NewNote extends AppCompatActivity {
                         });
                     }else {
                         checker++;
-                        if (checker==5)
                             send();
                     }
-
                 }
-
-
-
 
                 }
         });
@@ -155,7 +167,7 @@ public class NewNote extends AppCompatActivity {
 
             CropImage.activity()
                     .setGuidelines(CropImageView.Guidelines.ON)
-                    .setAspectRatio(3, 4)
+                    .setAspectRatio(7, 6)
                     .start(NewNote.this);
 
         }
@@ -214,9 +226,13 @@ public class NewNote extends AppCompatActivity {
     public void send(){
         if (checker==5) {
             String userId = user.getUid();
-            String text = editText.getText().toString();
+            String text;
+            if (type=="pic")
+             text = editText.getText().toString();
+            else
+                text=editText2.getText().toString();
             title = titleView.getText().toString();
-            NoteObj noteOb = new NoteObj(polylinePoints, text, "pic", downloadUriArray, title, userId, getBiggestRadius(), Calendar.getInstance().getTime().toString());
+            NoteObj noteOb = new NoteObj(polylinePoints, text, type, downloadUriArray, title, userId, getBiggestRadius(), Calendar.getInstance().getTime().toString());
             db.collection("Notes").document().set(noteOb);
             progressBar.setVisibility(View.INVISIBLE);
 
